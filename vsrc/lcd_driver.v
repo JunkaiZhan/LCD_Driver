@@ -25,7 +25,7 @@ module lcd_driver(
 );
 
 // Parameter Declarations --------------------------------------
-parameter DATA_WIDTH = 9;
+parameter DATA_WIDTH = 8;
 
 localparam IDLE  = 3'd0;
 localparam INDEX = 3'd1;
@@ -42,6 +42,9 @@ input [DATA_WIDTH - 1 : 0] data_in;
 output rst_lcd, scl_lcd, sda_lcd;
 output cs_lcd, rs_lcd, led_lcd;
 output done;
+
+reg scl_lcd, sda_lcd;
+reg cs_lcd, rs_lcd;
 
 assign rst_lcd = rstn;
 assign led_lcd = 1'b1;
@@ -72,7 +75,7 @@ always @ (*) begin
     IDLE: begin
         if(valid_in && !index_or_data) next_state = INDEX;
         else if(valid_in && index_or_data) next_state = DATA;
-        else next_state = IDLE
+        else next_state = IDLE;
     end
     INDEX: begin next_state = TRA_1; end
     DATA:  begin next_state = TRA_1; end
@@ -83,6 +86,8 @@ always @ (*) begin
         else next_state = TRA_1;
     end
     DONE: begin next_state = IDLE; end
+    default: begin next_state = IDLE; end
+    endcase
 end
 
 always @ (*) begin
