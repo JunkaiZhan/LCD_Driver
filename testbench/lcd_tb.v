@@ -73,7 +73,7 @@ end
 
 // dump out file and variables
 initial begin
-    $dumpfile("./sim/lcd_wv.vcd");
+    $dumpfile("lcd_wv.vcd");
     $dumpvars(0, dut);
 end
 
@@ -81,64 +81,44 @@ end
 initial begin
     
     // command 1: initial
-    command = 3'd1;
-    valid_in = 1'b1;
+    command = 3'd0;
+    valid_in = 1'b0;
     fifo_rd_data = 8'haa;
     fifo_empty = 1'b0;
+    #(time_cycle*5);
+
+    command = 3'd1;
+    valid_in = 1'b1;
     #time_cycle;
     command = 3'd1;
     valid_in = 1'b0;
     fifo_rd_data = 8'haa;
     fifo_empty = 1'b0;
-    #(time_cycle*1000);
+    #(time_cycle*1800);
 
     // command 2: clear_red
-    command = 3'd2;
-    valid_in = 1'b1;
-    fifo_rd_data = 8'haa;
-    fifo_empty = 1'b0;
-    #time_cycle;
-    command = 3'd2;
-    valid_in = 1'b0;
-    fifo_rd_data = 8'haa;
-    fifo_empty = 1'b0;
-    #(time_cycle*1000);
-
-    // command 3: clear_green
-    command = 3'd3;
-    valid_in = 1'b1;
-    fifo_rd_data = 8'haa;
-    fifo_empty = 1'b0;
-    #time_cycle;
-    command = 3'd3;
-    valid_in = 1'b0;
-    fifo_rd_data = 8'haa;
-    fifo_empty = 1'b0;
-    #(time_cycle*1000);
-    
-    // command 4: clear_blue
-    command = 3'd4;
-    valid_in = 1'b1;
-    fifo_rd_data = 8'haa;
-    fifo_empty = 1'b0;
-    #time_cycle;
-    command = 3'd4;
-    valid_in = 1'b0;
-    fifo_rd_data = 8'haa;
-    fifo_empty = 1'b0;
-    #(time_cycle*1000);
+    // command = 3'd2;
+    // valid_in = 1'b1;
+    // fifo_rd_data = 8'haa;
+    // fifo_empty = 1'b0;
+    // #time_cycle;
+    // command = 3'd2;
+    // valid_in = 1'b0;
+    // fifo_rd_data = 8'haa;
+    // fifo_empty = 1'b0;
+    // #(time_cycle*3000000);
 
     // command 5: show_imaage
-    command = 3'd5;
-    valid_in = 1'b1;
-    fifo_rd_data = 8'haa;
-    fifo_empty = 1'b0;
-    #time_cycle;
-    command = 3'd5;
-    valid_in = 1'b0;
-    fifo_rd_data = 8'haa;
-    fifo_empty = 1'b0;
-    #(time_cycle*1000);
+    // command = 3'd5;
+    // valid_in = 1'b1;
+    // fifo_rd_data = 8'haa;
+    // fifo_empty = 1'b0;
+    // #time_cycle;
+    // command = 3'd5;
+    // valid_in = 1'b0;
+    // fifo_rd_data = 8'haa;
+    // fifo_empty = 1'b0;
+    // #(time_cycle*3000000);
 
     // command 5: show_imaage failed
     command = 3'd5;
@@ -150,25 +130,25 @@ initial begin
     valid_in = 1'b0;
     fifo_rd_data = 8'h9a;
     fifo_empty = 1'b1;
-    #(time_cycle*1000);
+    #(time_cycle*3000000);
 
     // command 5: show_imaage change fifo data
-    command = 3'd5;
-    valid_in = 1'b1;
-    fifo_rd_data = 8'haa;
-    fifo_empty = 1'b0;
-    #time_cycle;
-    command = 3'd5;
-    valid_in = 1'b0;
-    fifo_rd_data = 8'haa;
-    fifo_empty = 1'b0;
-    #(time_cycle*10);
-    fifo_rd_data = 8'h94;
-    #(time_cycle*10);
-    fifo_rd_data = 8'hb3;
-    #(time_cycle*10);
-    fifo_rd_data = 8'h26;
-    #(time_cycle*600);
+    // command = 3'd5;
+    // valid_in = 1'b1;
+    // fifo_rd_data = 8'haa;
+    // fifo_empty = 1'b0;
+    // #time_cycle;
+    // command = 3'd5;
+    // valid_in = 1'b0;
+    // fifo_rd_data = 8'haa;
+    // fifo_empty = 1'b0;
+    // #(time_cycle*10);
+    // fifo_rd_data = 8'h94;
+    // #(time_cycle*100);
+    // fifo_rd_data = 8'hb3;
+    // #(time_cycle*100);
+    // fifo_rd_data = 8'h26;
+    // #(time_cycle*3000000);
 
     #(time_cycle*100);
     $finish;

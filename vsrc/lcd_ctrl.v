@@ -90,7 +90,7 @@ assign index_or_data = data_temp[DATA_WIDTH];
 assign data_driver = data_temp[DATA_WIDTH - 1 : 0];
 
 // clear sequence
-wire [DATA_WIDTH : 0] clear_seq [0 : 15];
+wire [DATA_WIDTH : 0] clear_seq [0 : 16];
 assign clear_seq[0]  = 9'h02A;
 assign clear_seq[1]  = 9'h100; // X start
 assign clear_seq[2]  = 9'h100; 
@@ -101,12 +101,13 @@ assign clear_seq[6]  = 9'h100; // Y start
 assign clear_seq[7]  = 9'h100;
 assign clear_seq[8]  = 9'h101; // Y end
 assign clear_seq[9]  = 9'h13F;
-assign clear_seq[10] = 9'h1F8; // RED
-assign clear_seq[11] = 9'h100;
-assign clear_seq[12] = 9'h107; // GREEN
-assign clear_seq[13] = 9'h1E0;
-assign clear_seq[14] = 9'h100; // BLUE
-assign clear_seq[15] = 9'h11F;
+assign clear_seq[10] = 9'h02C; 
+assign clear_seq[11] = 9'h1F8; // RED
+assign clear_seq[12] = 9'h100;
+assign clear_seq[13] = 9'h107; // GREEN
+assign clear_seq[14] = 9'h1E0;
+assign clear_seq[15] = 9'h100; // BLUE
+assign clear_seq[16] = 9'h11F;
 
 // initialization sequence
 wire [DATA_WIDTH : 0] init_seq [0 : (INITIAL_DONE_NUM - 1)];
@@ -197,6 +198,9 @@ assign init_seq[83] = 9'h10F;
 assign init_seq[84] = 9'h029;
 
 // Logic -------------------------------------------------------
+reg [STATE_WIDTH - 1 : 0] state;
+reg [STATE_WIDTH - 1 : 0] next_state;
+
 // buffer
 reg [COMM_WIDTH -  1 : 0] command_r;
 reg [FRAME_SIZE_WIDTH - 1 : 0] frame_size_r;
@@ -209,7 +213,7 @@ always @ (posedge clk or negedge rstn) begin
         if(valid_in && !busy) begin
             command_r <= command;
             busy <= 1'b1;
-        end else if(command_done) begin 
+        end else if(command_done || state == ERROR) begin 
             command_r <= 'b0;
             busy <= 1'b0;
         end
@@ -217,15 +221,13 @@ always @ (posedge clk or negedge rstn) begin
 end
 
 // state machine
-reg [STATE_WIDTH - 1 : 0] state;
-reg [STATE_WIDTH - 1 : 0] next_state;
 
 reg [17:0] seq_counter;
 
 wire command_done;
-assign command_done = ((command_r == INITIAL) ? 
-        (seq_counter == INITIAL_DONE_NUM) :
-        (seq_counter == FLASH_DONE_NUM)) || (state == IDLE);
+assign command_done = (command_r == INITIAL) ? 
+        ((seq_counter == INITIAL_DONE_NUM) && done_driver):
+        ((seq_counter == FLASH_DONE_NUM) && done_driver);
 
 always @ (posedge clk or negedge rstn) begin
     if(!rstn) state <= IDLE;
@@ -245,7 +247,7 @@ always @ (*) begin
     TRA2: begin 
         if(command_done) next_state = IDLE;
         else if(done_driver) begin
-            if(command_r == SHOW_IMAGE || fifo_empty) next_state = ERROR;
+            if(command_r == SHOW_IMAGE && fifo_empty) next_state = ERROR;
             else next_state = TRA1;
         end
         else next_state = TRA2;
@@ -275,8 +277,8 @@ always @ (*) begin
         end
         SHOW_IMAGE: begin
             valid_driver = 1'b1;
-            data_temp = (index < 10) ? clear_seq[index] : {1'b1, fifo_rd_data}; 
-            fifo_rd_en = (index >= 10);
+            data_temp = (index >= 11) ? {1'b1, fifo_rd_data} : clear_seq[index]; 
+            fifo_rd_en = (index >= 11);
         end
         default: begin 
             valid_driver = 1'b0;
@@ -301,7 +303,7 @@ always @ (posedge clk or negedge rstn) begin
     if(!rstn) begin
         seq_counter <= 'b0;
     end else begin
-        if(state == IDLE) begin
+        if(state == IDLE || command_done) begin
             seq_counter <= 'b0;
         end else if(command_r != INITIAL && seq_counter == FLASH_DONE_NUM) begin
             seq_counter <= FLASH_DONE_NUM;
@@ -317,13 +319,15 @@ reg [6:0] index; // range 0~127
 always @ (posedge clk or negedge rstn) begin
     if(!rstn) index <= 'b0;
     else begin 
-        if(state == IDLE) begin
+        if(state == IDLE || command_done) begin
             index <= 'b0;
         end else if(state == TRA1) begin
-            if(command_r == SHOW_IMAGE && index == 10) index <= 10;
-            else if(command_r == CLEAR_RED && index == 11) index <= 10;
-            else if(command_r == CLEAR_GREEN && index == 13) index <= 12;
-            else if(command_r == CLEAR_BLUE && index == 15) index <= 14;
+            if(command_r == SHOW_IMAGE && index == 11) index <= 11;
+            else if(command_r == CLEAR_RED && index == 12) index <= 11;
+            else if(command_r == CLEAR_GREEN && index == 10) index <= 13;
+            else if(command_r == CLEAR_GREEN && index == 14) index <= 13;
+            else if(command_r == CLEAR_BLUE && index == 10) index <= 15;
+            else if(command_r == CLEAR_BLUE && index == 16) index <= 15;
             else index <= index + 1'b1;
         end
     end

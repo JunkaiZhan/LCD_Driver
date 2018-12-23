@@ -77,13 +77,13 @@ always @ (*) begin
         else if(valid_in && index_or_data) next_state = DATA;
         else next_state = IDLE;
     end
-    INDEX: begin next_state = TRA_1; end
-    DATA:  begin next_state = TRA_1; end
-    TRA_1: begin next_state = TRA_2; end
+    INDEX: begin next_state = TRA_2; end
+    DATA:  begin next_state = TRA_2; end
+    // TRA_1: begin next_state = TRA_2; end
     TRA_2: begin next_state = TRA_3; end
     TRA_3: begin
         if(counter_is_zero) next_state = DONE;
-        else next_state = TRA_1;
+        else next_state = TRA_2;
     end
     DONE: begin next_state = IDLE; end
     default: begin next_state = IDLE; end
@@ -92,9 +92,9 @@ end
 
 always @ (*) begin
     case(state)
-    IDLE:  begin cs_lcd = 1'b1; scl_lcd = 1'b1; end
-    INDEX: begin cs_lcd = 1'b0; rs_lcd  = 1'b0; end
-    DATA:  begin cs_lcd = 1'b0; rs_lcd  = 1'b1; end
+    IDLE:  begin cs_lcd = 1'b1; scl_lcd = 1'b1; sda_lcd = 1'b1; end
+    INDEX: begin cs_lcd = 1'b0; scl_lcd = 1'b1; rs_lcd  = 1'b0; end
+    DATA:  begin cs_lcd = 1'b0; scl_lcd = 1'b1; rs_lcd  = 1'b1; end
     TRA_1: begin cs_lcd = 1'b0; scl_lcd = 1'b1; sda_lcd = valid_bit; end
     TRA_2: begin cs_lcd = 1'b0; scl_lcd = 1'b0; sda_lcd = valid_bit; end
     TRA_3: begin cs_lcd = 1'b0; scl_lcd = 1'b1; sda_lcd = valid_bit; end
@@ -114,7 +114,7 @@ end
 always @ (posedge clk or negedge rstn) begin
     if(!rstn) counter <= 'd0;
     else begin
-        if(state == TRA_1) counter <= counter - 1'b1;
+        if(state == TRA_2) counter <= counter - 1'b1;
         else if(valid_in) counter <= DATA_WIDTH;
     end
 end
