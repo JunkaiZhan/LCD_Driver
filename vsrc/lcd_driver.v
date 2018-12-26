@@ -79,7 +79,7 @@ always @ (*) begin
     end
     INDEX: begin next_state = TRA_2; end
     DATA:  begin next_state = TRA_2; end
-    // TRA_1: begin next_state = TRA_2; end
+//    TRA_1: begin next_state = TRA_2; end
     TRA_2: begin next_state = TRA_3; end
     TRA_3: begin
         if(counter_is_zero) next_state = DONE;
@@ -95,7 +95,7 @@ always @ (*) begin
     IDLE:  begin cs_lcd = 1'b1; scl_lcd = 1'b1; sda_lcd = 1'b1; end
     INDEX: begin cs_lcd = 1'b0; scl_lcd = 1'b1; rs_lcd  = 1'b0; end
     DATA:  begin cs_lcd = 1'b0; scl_lcd = 1'b1; rs_lcd  = 1'b1; end
-    TRA_1: begin cs_lcd = 1'b0; scl_lcd = 1'b1; sda_lcd = valid_bit; end
+//    TRA_1: begin cs_lcd = 1'b0; scl_lcd = 1'b1; sda_lcd = valid_bit; end
     TRA_2: begin cs_lcd = 1'b0; scl_lcd = 1'b0; sda_lcd = valid_bit; end
     TRA_3: begin cs_lcd = 1'b0; scl_lcd = 1'b1; sda_lcd = valid_bit; end
     DONE:  begin cs_lcd = 1'b1; end

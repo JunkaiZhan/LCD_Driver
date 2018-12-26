@@ -77,7 +77,6 @@ output cs_lcd, rs_lcd, led_lcd;
 // interface
 reg busy;
 reg fifo_rd_en;
-assign error = state == ERROR;
 
 // sub module connection
 wire index_or_data;
@@ -200,10 +199,17 @@ assign init_seq[84] = 9'h029;
 // Logic -------------------------------------------------------
 reg [STATE_WIDTH - 1 : 0] state;
 reg [STATE_WIDTH - 1 : 0] next_state;
-
-// buffer
 reg [COMM_WIDTH -  1 : 0] command_r;
 reg [FRAME_SIZE_WIDTH - 1 : 0] frame_size_r;
+reg [17:0] seq_counter;
+reg [6:0] index; // range 0~127
+
+assign error = state == ERROR;
+
+wire command_done;
+assign command_done = (command_r == INITIAL) ? 
+        ((seq_counter == INITIAL_DONE_NUM) && done_driver):
+        ((seq_counter == FLASH_DONE_NUM) && done_driver);
 
 always @ (posedge clk or negedge rstn) begin
     if(!rstn) begin
@@ -221,13 +227,6 @@ always @ (posedge clk or negedge rstn) begin
 end
 
 // state machine
-
-reg [17:0] seq_counter;
-
-wire command_done;
-assign command_done = (command_r == INITIAL) ? 
-        ((seq_counter == INITIAL_DONE_NUM) && done_driver):
-        ((seq_counter == FLASH_DONE_NUM) && done_driver);
 
 always @ (posedge clk or negedge rstn) begin
     if(!rstn) state <= IDLE;
@@ -315,7 +314,6 @@ always @ (posedge clk or negedge rstn) begin
     end
 end
 
-reg [6:0] index; // range 0~127
 always @ (posedge clk or negedge rstn) begin
     if(!rstn) index <= 'b0;
     else begin 
